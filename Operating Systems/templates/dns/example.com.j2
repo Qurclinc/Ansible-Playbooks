@@ -1,0 +1,14 @@
+$TTL 3h
+@ IN  SOA example{{ N }}.com.  root.example{{ N }}.com (
+  1234567890
+	604800
+	86400
+	2419200
+	604800
+)
+
+    IN    NS    ns.example{{ N }}.com
+gate.example{{ N }}.com     IN   A      192.168.{{ N }}.1
+server.example{{ N }}.com   IN   A      192.168.{{ N }}.2
+ns.example{{ N }}.com       IN   A      192.168.{{ N }}.2
+samba.example{{ N }}.com    IN   CNAME  server

@@ -1,0 +1,10 @@
+auto lo
+iface lo inet loopback
+
+auto {{ adapter_1 }}
+iface {{ adapter_1 }} inet static
+address 192.168.{{ N }}.{{ last_octet }}
+netmask 255.255.255.0
+
+auto {{ adapter_2 }}
+iface {{ adapter_2 }} inet dhcp

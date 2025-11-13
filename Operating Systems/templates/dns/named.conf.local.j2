@@ -1,0 +1,9 @@
+zone "example{{ N }}.com" {
+  type master;
+  file "/etc/bind/example{{ N }}.com";
+};
+
+zone "{{ N }}.168.192.in-addr.arpa" {
+  type master;
+  file "/etc/bind/example{{ N }}.rev";
+};

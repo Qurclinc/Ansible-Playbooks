@@ -1,0 +1,38 @@
+- name: Base configuration for gate machine
+  hosts: stand
+  remote_user: root
+  become: yes
+
+  tasks:
+    - name: Make packages update
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Edit /etc/hosts file
+      ansible.builtin.replace:
+        path: /etc/hosts
+        regexp: ^127.0.1.1\s+\w+$
+        replace: "192.168.{{ N }}.{{ last_octet}}    {{ short_name }}.example{{ N }}.com"
+
+    - name: Edit /etc/hostname file
+      ansible.builtin.replace:
+        path: /etc/hostname
+        regexp: ^\w+$
+        replace: "{{ short_name }}.example{{ N }}.com"
+
+    - name: Configure network interfaces
+      template:
+        src: templates/base/interfaces.j2
+        dest: /etc/network/interfaces
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Restart networks services
+      ansible.builtin.service:
+          name: "{{ item }}"
+          state: restarted
+      loop:
+        - NetworkManager
+        - networking
+
