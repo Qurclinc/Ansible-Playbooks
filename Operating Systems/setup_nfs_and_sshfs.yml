@@ -1,0 +1,49 @@
+- name: Setup NFS and SSHFS stand on server
+  hosts: server
+  remote_user: root
+  become: true
+
+  tasks:
+    - name: Install needed packages
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        update_cache: yes
+      loop:
+        - nfs-kernel-server
+        - sshfs
+
+    - name: Configure NFS
+      template:
+        src: nfs/exports.j2
+        dest: /etc/exports
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Update services, loading FUSE kernels
+      ansible.builtin.shell: |
+        exportfs -r
+        exportfs
+        modprobe fuse
+
+- name: Setup NFS and SSHFS stand on gate
+  hosts: gate
+  remote_user: root
+  become: true
+
+  tasks:
+    - name: Install needed packages
+      ansible.builtin.apt:
+        name: nfs-common
+        update_cache: yes
+    - name: Creating needed directories
+      ansible.builtin.file:
+        path: /mnt/{{ item }}
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: "0755"
+      loop:
+        - nfs
+        - disk1
+

@@ -1,0 +1,40 @@
+- name: Setup FTP server
+  hosts: stand
+  become: yes
+
+  tasks:
+    - name: Setup needed packages
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        update_cache: yes
+      loop:
+        - vsftpd
+        - nfs-common
+        - ftp
+
+    - name: Create needed directories
+      ansible.builtin.file:
+        state: directory
+        path: "/home/{{ user }}/{{ item }}"
+      loop:
+        - ftp
+        - ftp/anon
+
+    - name: Make right configuration for vsftpd
+      ansible.builtin.template:
+        src: ./templates/ftp/vsftpd.conf.j2
+        dest: /etc/vsftpd.conf
+        owner: root
+        group: root
+        mode: "0644"
+    - name: Add /etc/vsftpd.chroot_list users
+      ansible.builtin.command:
+        cmd: echo "user" | sudo tee /etc/vsftpd.chroot_list
+
+    - name: Restart services
+      ansible.builtin.service:
+        name: vsftpd
+        state: restarted
+
+
+

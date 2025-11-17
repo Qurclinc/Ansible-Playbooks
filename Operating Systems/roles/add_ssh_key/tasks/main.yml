@@ -1,0 +1,43 @@
+- name: Create .ssh directory
+  ansible.builtin.file:
+    path: /home/{{ user }}/.ssh
+    state: directory
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: "0700"
+
+- name: Generate SSH key pair
+  ansible.builtin.command: 
+    cmd: ssh-keygen -t rsa -b 4096 -f /home/{{ user }}/.ssh/{{ key_name }} -C "" -N ""
+    creates: /home/{{ user }}/.ssh/{{ key_name }}
+
+- name: Set correct permissions on private key
+  ansible.builtin.file:
+    path: /home/{{ user }}/.ssh/{{ key_name }}
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: "0600"
+
+- name: Set correct permissions on public key
+  ansible.builtin.file:
+    path: /home/{{ user }}/.ssh/{{ key_name }}.pub
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: "0644"  # публичный ключ может быть читаемым
+
+- name: Read public key
+  ansible.builtin.slurp:
+    src: /home/{{ user }}/.ssh/{{ key_name }}.pub
+  register: public_key
+
+- name: Deploy ssh key to remote host
+  ansible.builtin.authorized_key:
+    user: "{{ remote_user }}"
+    state: present
+    key: "{{ public_key.content | b64decode }}"
+  delegate_to: "{{ remote_host }}"
+  vars:
+    ansible_connection: ssh
+    ansible_user: "{{ remote_user }}"
+    ansible_ssh_pass: "{{ remote_pass | default(omit) }}"
+  become: no
