@@ -26,10 +26,16 @@
         dest: /etc/vsftpd.conf
         owner: root
         group: root
+
         mode: "0644"
     - name: Add /etc/vsftpd.chroot_list users
-      ansible.builtin.command:
-        cmd: echo "user" | sudo tee /etc/vsftpd.chroot_list
+      ansible.builtin.lineinfile:
+        path: /etc/vsftpd.chroot_list
+        line: "{{ user }}"
+        create: yes
+        owner: root
+        group: root
+        mode: "0644"
 
     - name: Restart services
       ansible.builtin.service:
